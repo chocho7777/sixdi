@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="az">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Texas Hold'em Poker</title>
+  <meta name="description" content="Texas Hold'em poker: 4 kompüter oyunçusuna qarşı virtual fişkalarla oyna.">
+  <meta name="theme-color" content="#061a12">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Poker">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" type="button" aria-label="Menyu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="topbar-center">
+        <div class="topbar-title" id="handNo">Texas Hold'em</div>
+        <div class="topbar-sub" id="blindsInfo"></div>
+      </div>
+      <button class="icon-btn" id="helpBtn" type="button" aria-label="Kombinasiyalar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 9a2.9 2.9 0 0 1 5.6 1c0 2-2.8 2.4-2.8 4.4M12 18.2v.1"/><circle cx="12" cy="12" r="9.5"/></svg>
+      </button>
+    </header>
+
+    <main class="stage" id="stage">
+      <div class="table-rail"><div class="table-felt"><div class="felt-mark">TEXAS HOLD'EM</div></div></div>
+      <div class="center-info">
+        <div class="street-label" id="streetLabel"></div>
+        <div class="pot" id="pot" hidden>
+          <span class="chip chip-pot"></span><span class="pot-label" id="potLabel">Bank</span><b id="potAmount">0</b>
+        </div>
+        <div class="side-pots" id="sidePots"></div>
+      </div>
+      <div class="board" id="board"></div>
+      <div class="result" id="result" hidden></div>
+      <div class="seats" id="seats"></div>
+      <div class="dealer-btn" id="dealerBtn" hidden>D</div>
+      <div class="deck-spot" id="deckSpot"></div>
+      <div class="fx" id="fx"></div>
+      <div class="toast" id="toast" hidden></div>
+    </main>
+
+    <footer class="controls" id="controls">
+      <div class="status-line" id="statusLine">&nbsp;</div>
+      <div class="action-row" id="actionRow">
+        <button class="btn btn-fold" id="btnFold" type="button" disabled>
+          <span class="btn-label">Pas</span>
+        </button>
+        <button class="btn btn-call" id="btnCall" type="button" disabled>
+          <span class="btn-label">Çek</span><span class="btn-amount"></span>
+        </button>
+        <button class="btn btn-raise" id="btnRaise" type="button" disabled>
+          <span class="btn-label">Artır</span><span class="btn-amount"></span>
+        </button>
+      </div>
+      <div class="next-row" id="nextRow" hidden>
+        <button class="btn btn-next" id="btnNext" type="button">
+          <span class="btn-label">Növbəti əl</span><i class="btn-progress" id="nextProgress"></i>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Artırma paneli -->
+    <div class="sheet raise-sheet" id="raiseSheet" hidden>
+      <div class="sheet-head">
+        <div class="raise-cards" id="raiseCards"></div>
+        <div>
+          <div class="raise-title" id="raiseTitle">Artır</div>
+          <div class="raise-caption" id="raiseCaption">Ümumi mərcin</div>
+        </div>
+        <div class="raise-value" id="raiseValue">0</div>
+        <button class="icon-btn small" id="raiseClose" type="button" aria-label="Bağla">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="slider-row">
+        <button class="step-btn" id="raiseMinus" type="button" aria-label="Azalt">−</button>
+        <div class="slider" id="raiseSlider" role="slider" aria-label="Məbləğ">
+          <div class="slider-track"><div class="slider-fill" id="raiseFill"></div></div>
+          <div class="slider-thumb" id="raiseThumb"></div>
+        </div>
+        <button class="step-btn" id="raisePlus" type="button" aria-label="Artır">+</button>
+      </div>
+      <div class="presets" id="raisePresets"></div>
+      <button class="btn btn-raise btn-confirm" id="raiseConfirm" type="button">
+        <span class="btn-label">Artır</span><span class="btn-amount"></span>
+      </button>
+    </div>
+
+    <!-- Menyu -->
+    <div class="overlay" id="menuOverlay" hidden>
+      <div class="sheet panel scrollable">
+        <div class="panel-head">
+          <h2 data-t="menu">Menyu</h2>
+          <button class="icon-btn small" data-close type="button" aria-label="Bağla">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="stats" id="statsBox"></div>
+        <div class="setting">
+          <div class="setting-label" data-t="speed">Oyun sürəti</div>
+          <div class="segmented" id="speedSeg">
+            <button type="button" data-speed="normal">Normal</button>
+            <button type="button" data-speed="fast">Sürətli</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary" id="openRules" type="button">Kombinasiyalar və qaydalar</button>
+        <button class="btn btn-danger" id="newGameBtn" type="button">Yeni oyun</button>
+        <p class="fine-print" id="virtualNote"></p>
+      </div>
+    </div>
+
+    <!-- Qaydalar -->
+    <div class="overlay" id="rulesOverlay" hidden>
+      <div class="sheet panel scrollable">
+        <div class="panel-head">
+          <h2>Kombinasiyalar</h2>
+          <button class="icon-btn small" data-close type="button" aria-label="Bağla">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="rankings" id="rankings"></div>
+        <h3 id="rulesHowTitle">Necə oynanılır</h3>
+        <ol class="rules-how" id="rulesHow"></ol>
+      </div>
+    </div>
+
+    <!-- Təsdiq -->
+    <div class="overlay" id="confirmOverlay" hidden>
+      <div class="dialog">
+        <p id="confirmText"></p>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" id="confirmNo" type="button">Ləğv et</button>
+          <button class="btn btn-danger" id="confirmYes" type="button">Başla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fişka bitdi -->
+    <div class="overlay" id="bustedOverlay" hidden>
+      <div class="dialog busted">
+        <div class="busted-chips"><span class="chip"></span><span class="chip"></span><span class="chip"></span></div>
+        <h2 id="bustedTitle">Fişkaların bitdi</h2>
+        <p id="bustedText"></p>
+        <button class="btn btn-raise btn-wide" id="restartBtn" type="button">Yenidən başla</button>
+      </div>
+    </div>
+
+    <div class="rotate-overlay" id="rotateOverlay">
+      <div class="rotate-phone"></div>
+      <p id="rotateText">Telefonu şaquli vəziyyətə çevir</p>
+    </div>
+  </div>
+
+  <script src="js/engine/cards.js"></script>
+  <script src="js/engine/evaluator.js"></script>
+  <script src="js/engine/pots.js"></script>
+  <script src="js/engine/game.js"></script>
+  <script src="js/ai/bot.js"></script>
+  <script src="js/app/storage.js"></script>
+  <script src="js/app/local-table.js"></script>
+  <script src="js/ui/i18n.js"></script>
+  <script src="js/ui/table-view.js"></script>
+  <script src="js/ui/controls.js"></script>
+  <script src="js/ui/main.js"></script>
+</body>
+</html>
